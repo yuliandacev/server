@@ -15,6 +15,8 @@ use OCP\IURLGenerator;
 
 /**
  * Class UrlGeneratorTest
+ *
+ * @package Test
  */
 class UrlGeneratorTest extends \Test\TestCase {
 
