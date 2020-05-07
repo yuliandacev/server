@@ -30,6 +30,7 @@ use OCP\App\AppPathNotFoundException;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootstrap;
+use OCP\AppFramework\QueryException;
 use OCP\ILogger;
 use function class_exists;
 use function class_implements;
@@ -52,6 +53,7 @@ class Coordinator {
 
 	public function runRegistration(): void {
 		$context = new RegistrationContext();
+		// TODO: just enabled apps???
 		$appIds = $this->appManager->getInstalledApps();
 		foreach ($appIds as $appId) {
 			/*
@@ -73,14 +75,41 @@ class Coordinator {
 			$applicationClassName = $appNameSpace . '\\AppInfo\\Application';
 			if (class_exists($applicationClassName) && in_array(IBootstrap::class, class_implements($applicationClassName), true)) {
 				/** @var IBootstrap $application */
-				$application = \OC::$server->query($applicationClassName);
-				$application->register($context);
+				try {
+					$application = \OC::$server->query($applicationClassName);
+					$application->register($context);
+				} catch (QueryException $e) {
+					// Weird, but ok
+				}
 			}
 		}
 	}
 
-	public function bootApps(): void {
+	public function bootApp(string $appId): void {
+		$context = new BootContext();
+		$appNameSpace = App::buildAppNamespace($appId);
+		$applicationClassName = $appNameSpace . '\\AppInfo\\Application';
+		if (!class_exists($applicationClassName)) {
+			// Nothing to boot
+			return;
+		}
 
+		/*
+		 * Now it is time to fetch an instance of the App class. For classes
+		 * that implement \OCP\AppFramework\Bootstrap\IBootstrap this means
+		 * the instance was already created for register, but any other
+		 * (legacy) code will now do their magic via the constructor.
+		 */
+		try {
+			/** @var App $application */
+			$application = \OC::$server->query($applicationClassName);
+			if ($application instanceof IBootstrap) {
+				$application->boot($context);
+			}
+		} catch (QueryException $e) {
+			// Weird, but ok
+			return;
+		}
 	}
 
 }
