@@ -25,6 +25,6 @@ declare(strict_types=1);
 
 namespace OCP\AppFramework\Bootstrap;
 
-class IBootContext {
+interface IBootContext {
 
 }

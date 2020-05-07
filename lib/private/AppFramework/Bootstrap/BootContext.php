@@ -23,22 +23,10 @@ declare(strict_types=1);
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace OCP\AppFramework\Bootstrap;
+namespace OC\AppFramework\Bootstrap;
 
+use OCP\AppFramework\Bootstrap\IBootContext;
 
-interface IRegistrationContext {
-
-	/**
-	 * Register a service listener
-	 *
-	 * This is equivalent to calling \OCP\EventDispatcher\IEventDispatcher::addServiceListener
-	 *
-	 * @param string $event preferably the fully-qualified class name of the Event sub class to listen for
-	 * @param string $listener fully qualified class name (or ::class notation) of a \OCP\EventDispatcher\IEventListener that can be built by the DI container
-	 * @param int $priority
-	 *
-	 * @since 20.0.0
-	 */
-	public function registerEventListener(string $event, string $listener, int $priority = 0): void;
+class BootContext implements IBootContext {
 
 }

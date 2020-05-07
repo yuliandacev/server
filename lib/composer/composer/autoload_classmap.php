@@ -524,6 +524,8 @@ return array(
     'OC\\AllConfig' => $baseDir . '/lib/private/AllConfig.php',
     'OC\\AppConfig' => $baseDir . '/lib/private/AppConfig.php',
     'OC\\AppFramework\\App' => $baseDir . '/lib/private/AppFramework/App.php',
+    'OC\\AppFramework\\Bootstrap\\BootContext' => $baseDir . '/lib/private/AppFramework/Bootstrap/BootContext.php',
+    'OC\\AppFramework\\Bootstrap\\RegistrationContext' => $baseDir . '/lib/private/AppFramework/Bootstrap/RegistrationContext.php',
     'OC\\AppFramework\\DependencyInjection\\DIContainer' => $baseDir . '/lib/private/AppFramework/DependencyInjection/DIContainer.php',
     'OC\\AppFramework\\Http' => $baseDir . '/lib/private/AppFramework/Http.php',
     'OC\\AppFramework\\Http\\Dispatcher' => $baseDir . '/lib/private/AppFramework/Http/Dispatcher.php',
