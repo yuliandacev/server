@@ -26,7 +26,19 @@ declare(strict_types=1);
 namespace OC\AppFramework\Bootstrap;
 
 use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\IAppContainer;
 
 class BootContext implements IBootContext {
+
+	/** @var IAppContainer */
+	private $appContainer;
+
+	public function __construct(IAppContainer $appContainer) {
+		$this->appContainer = $appContainer;
+	}
+
+	public function getAppContainer(): IAppContainer {
+		return $this->appContainer;
+	}
 
 }

@@ -25,6 +25,10 @@ declare(strict_types=1);
 
 namespace OCP\AppFramework\Bootstrap;
 
+use OCP\AppFramework\IAppContainer;
+
 interface IBootContext {
+
+	public function getAppContainer(): IAppContainer;
 
 }

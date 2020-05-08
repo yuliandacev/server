@@ -74,8 +74,8 @@ class Coordinator {
 			$appNameSpace = App::buildAppNamespace($appId);
 			$applicationClassName = $appNameSpace . '\\AppInfo\\Application';
 			if (class_exists($applicationClassName) && in_array(IBootstrap::class, class_implements($applicationClassName), true)) {
-				/** @var IBootstrap $application */
 				try {
+					/** @var IBootstrap|App $application */
 					$application = \OC::$server->query($applicationClassName);
 					$application->register($context);
 				} catch (QueryException $e) {
@@ -86,7 +86,6 @@ class Coordinator {
 	}
 
 	public function bootApp(string $appId): void {
-		$context = new BootContext();
 		$appNameSpace = App::buildAppNamespace($appId);
 		$applicationClassName = $appNameSpace . '\\AppInfo\\Application';
 		if (!class_exists($applicationClassName)) {
@@ -104,10 +103,14 @@ class Coordinator {
 			/** @var App $application */
 			$application = \OC::$server->query($applicationClassName);
 			if ($application instanceof IBootstrap) {
+				/** @var BootContext $context */
+				$context = new BootContext($application->getContainer());
 				$application->boot($context);
 			}
 		} catch (QueryException $e) {
-			// Weird, but ok
+			$this->logger->logException($e, [
+				'message' => "Could not boot $appId" . $e->getMessage(),
+			]);
 			return;
 		}
 	}

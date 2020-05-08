@@ -34,6 +34,27 @@ class RegistrationContext implements IRegistrationContext {
 	/**
 	 * @inheritDoc
 	 */
+	public function registerService(string $name, callable $factory, bool $shared = true): void {
+		// TODO: Implement registerService() method.
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function registerServiceAlias(string $alias, string $target): void {
+		// TODO: Implement registerServiceAlias() method.
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function registerParameter(string $name, $value): void {
+		// TODO: Implement registerParameter() method.
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function registerEventListener(string $event, string $listener, int $priority = 0): void {
 		$this->eventListeners[] = [$event, $listener, $priority];
 	}

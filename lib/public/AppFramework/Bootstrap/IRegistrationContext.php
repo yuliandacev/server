@@ -26,16 +26,51 @@ declare(strict_types=1);
 namespace OCP\AppFramework\Bootstrap;
 
 
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\IContainer;
+
 interface IRegistrationContext {
+
+	/**
+	 * Register a service
+	 *
+	 * @param string $name
+	 * @param callable $factory
+	 * @param bool $shared
+	 *
+	 * @return void
+	 * @see IContainer::registerService()
+	 */
+	public function registerService(string $name, callable $factory, bool $shared = true): void;
+
+	/**
+	 * @param string $alias
+	 * @param string $target
+	 *
+	 * @return void
+	 * @see IContainer::registerAlias()
+	 */
+	public function registerServiceAlias(string $alias, string $target): void;
+
+	/**
+	 * @param string $name
+	 * @param mixed $value
+	 *
+	 * @return void
+	 * @see IContainer::registerParameter()
+	 */
+	public function registerParameter(string $name, $value): void;
 
 	/**
 	 * Register a service listener
 	 *
-	 * This is equivalent to calling \OCP\EventDispatcher\IEventDispatcher::addServiceListener
+	 * This is equivalent to calling IEventDispatcher::addServiceListener
 	 *
 	 * @param string $event preferably the fully-qualified class name of the Event sub class to listen for
 	 * @param string $listener fully qualified class name (or ::class notation) of a \OCP\EventDispatcher\IEventListener that can be built by the DI container
 	 * @param int $priority
+	 *
+	 * @see IEventDispatcher::addServiceListener()
 	 *
 	 * @since 20.0.0
 	 */
