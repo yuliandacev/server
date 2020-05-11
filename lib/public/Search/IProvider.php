@@ -25,6 +25,8 @@ declare(strict_types=1);
 
 namespace OCP\Search;
 
+use OCP\IUser;
+
 /**
  * Interface for an app search providers
  *
@@ -56,10 +58,11 @@ interface IProvider {
 	 * Implementations that return result pages have to adhere to the limit
 	 * property of a search query.
 	 *
+	 * @param IUser $user
 	 * @param ISearchQuery $query
 	 *
 	 * @return SearchResult
 	 */
-	public function search(ISearchQuery $query): SearchResult;
+	public function search(IUser $user, ISearchQuery $query): SearchResult;
 
 }
