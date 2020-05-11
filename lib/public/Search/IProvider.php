@@ -29,7 +29,9 @@ namespace OCP\Search;
  * Interface for an app search providers
  *
  * These providers will be implemented in apps, so they can participate in the
- * global search results of Nextcloud.
+ * global search results of Nextcloud. If an app provides more than one type of
+ * resource, e.g. contacts and address books in Nextcloud Contacts, it should
+ * register one provider per group.
  *
  * @since 20.0.0
  */
@@ -46,7 +48,12 @@ interface IProvider {
 	 * one of the first result set. This approach was chosen over a numeric limit/
 	 * offset approach as the offset moves as new data comes in. The cursor is
 	 * resistant to these changes and will still show results without overlaps or
-	 * gaps. Implementations that return result pages have to adhere to the limit
+	 * gaps.
+	 *
+	 * See https://dev.to/jackmarchant/offset-and-cursor-pagination-explained-b89
+	 * for the concept of cursors.
+	 *
+	 * Implementations that return result pages have to adhere to the limit
 	 * property of a search query.
 	 *
 	 * @param ISearchQuery $query

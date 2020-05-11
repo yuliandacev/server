@@ -26,29 +26,33 @@ declare(strict_types=1);
 namespace OCP\Search;
 
 /**
- * Class SearchResult
- *
  * @since 20.0.0
  */
 final class SearchResult {
+
+	/** @var string */
+	private $name;
 
 	/** @var bool */
 	private $isPaginated;
 
 	/** @var ASearchResultEntry[] */
 	private $entries;
-	/**
-	 * @var null
-	 */
+
+	/** @var int|string|null */
 	private $cursor;
 
 	/**
-	 * SearchResult constructor.
-	 *
+	 * @param string $name the translated name of the result section or group, e.g. "Mail"
 	 * @param bool $isPaginated
 	 * @param ASearchResultEntry[] $entries
+	 * @param null $cursor
 	 */
-	private function __construct(bool $isPaginated, array $entries, $cursor = null) {
+	private function __construct(string $name,
+								 bool $isPaginated,
+								 array $entries,
+								 $cursor = null) {
+		$this->name = $name;
 		$this->isPaginated = $isPaginated;
 		$this->entries = $entries;
 		$this->cursor = $cursor;
