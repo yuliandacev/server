@@ -53,9 +53,7 @@ class Coordinator {
 
 	public function runRegistration(): void {
 		$context = new RegistrationContext();
-		// TODO: just enabled apps???
-		$appIds = $this->appManager->getInstalledApps();
-		foreach ($appIds as $appId) {
+		foreach (OC_App::getEnabledApps() as $appId) {
 			/*
 			 * First, we have to enable the app's autoloader
 			 */
