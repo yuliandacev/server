@@ -979,7 +979,7 @@ class CardDavBackend implements BackendInterface, SyncSupport {
 		$result = $query2->execute();
 		$matches = $result->fetchAll();
 		$result->closeCursor();
-		$matches = array_map(function($match) {
+		$matches = array_map(function ($match) {
 			return (int) $match['cardid'];
 		}, $matches);
 
