@@ -11,6 +11,10 @@
             "OCP\\": "lib/public"
         }
     },
+    "require": {
+        "ext-json": "*",
+        "ext-pdo": "*"
+    },
     "require-dev": {
         "jakub-onderka/php-parallel-lint": "^0.9.2",
         "jakub-onderka/php-console-highlighter": "^0.3.2",
@@ -19,6 +23,6 @@
     "scripts": {
         "cs:fix": "php-cs-fixer fix",
         "cs:check": "php-cs-fixer fix --dry-run --diff",
-        "lint": "find . -name \\*.php -not -path './lib/composer/*' -not -path './build/.phan/*' -exec php -l \"{}\" \\;"
+        "lint": "find . -name \\*.php -not -path './lib/composer/*' -not -path './build/.phan/*' -print0 | xargs -0 -n1 php -l"
     }
 }

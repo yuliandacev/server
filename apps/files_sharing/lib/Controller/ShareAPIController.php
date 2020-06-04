@@ -216,15 +216,6 @@ class ShareAPIController extends OCSController {
 			$result['expiration'] = $expiration->format('Y-m-d 00:00:00');
 		}
 
-		// TODO: It might make sense to have a dedicated setting to allow/deny converting link shares into federated ones
-		// For link shares, we need to have the PERMISSION_SHARE if federated is enabled
-		if ($this->shareManager->outgoingServer2ServerSharesAllowed()) {
-			if ($share->getShareType() === IShare::TYPE_LINK
-				|| $share->getShareType() === IShare::TYPE_EMAIL) {
-					$result['permissions'] |= Constants::PERMISSION_SHARE;
-			}
-		}
-
 		if ($share->getShareType() === IShare::TYPE_USER) {
 			$sharedWith = $this->userManager->get($share->getSharedWith());
 			$result['share_with'] = $share->getSharedWith();
@@ -511,6 +502,11 @@ class ShareAPIController extends OCSController {
 				$permissions = Constants::PERMISSION_READ;
 			}
 
+			// TODO: It might make sense to have a dedicated setting to allow/deny converting link shares into federated ones
+			if (($permissions & Constants::PERMISSION_READ) && $this->shareManager->outgoingServer2ServerSharesAllowed()) {
+				$permissions |= Constants::PERMISSION_SHARE;
+			}
+
 			$share->setPermissions($permissions);
 
 			// Set password
@@ -613,12 +609,12 @@ class ShareAPIController extends OCSController {
 
 		$shares = array_merge($userShares, $groupShares, $circleShares, $roomShares);
 
-		$shares = array_filter($shares, function (IShare $share) {
+		$filteredShares = array_filter($shares, function (IShare $share) {
 			return $share->getShareOwner() !== $this->currentUser;
 		});
 
 		$formatted = [];
-		foreach ($shares as $share) {
+		foreach ($filteredShares as $share) {
 			if ($this->canAccessShare($share)) {
 				try {
 					$formatted[] = $this->formatShare($share);
@@ -791,7 +787,8 @@ class ShareAPIController extends OCSController {
 				continue;
 			}
 
-			if (in_array($share->getId(), $known) || $share->getSharedWith() === $this->currentUser) {
+			if (in_array($share->getId(), $known)
+				|| ($share->getSharedWith() === $this->currentUser && $share->getShareType() === IShare::TYPE_USER)) {
 				continue;
 			}
 
@@ -1054,6 +1051,11 @@ class ShareAPIController extends OCSController {
 			}
 
 			if ($newPermissions !== null) {
+				// TODO: It might make sense to have a dedicated setting to allow/deny converting link shares into federated ones
+				if (($newPermissions & Constants::PERMISSION_READ) && $this->shareManager->outgoingServer2ServerSharesAllowed()) {
+					$newPermissions |= Constants::PERMISSION_SHARE;
+				}
+
 				$share->setPermissions($newPermissions);
 				$permissions = $newPermissions;
 			}
@@ -1601,15 +1603,15 @@ class ShareAPIController extends OCSController {
 			return false;
 		}
 
-		if ($share->getShareType() === \OCP\IShare::TYPE_USER && $share->getSharedWith() === $userId) {
+		if ($share->getShareType() === IShare::TYPE_USER && $share->getSharedWith() === $userId) {
 			return true;
 		}
 
-		if ($share->getShareType() === \OCP\IShare::TYPE_GROUP && $this->groupManager->isInGroup($userId, $share->getSharedWith())) {
+		if ($share->getShareType() === IShare::TYPE_GROUP && $this->groupManager->isInGroup($userId, $share->getSharedWith())) {
 			return true;
 		}
 
-		if ($share->getShareType() === \OCP\IShare::TYPE_CIRCLE && \OC::$server->getAppManager()->isEnabledForUser('circles')
+		if ($share->getShareType() === IShare::TYPE_CIRCLE && \OC::$server->getAppManager()->isEnabledForUser('circles')
 			&& class_exists('\OCA\Circles\Api\v1\Circles')) {
 			$hasCircleId = (substr($share->getSharedWith(), -1) === ']');
 			$shareWithStart = ($hasCircleId ? strrpos($share->getSharedWith(), '[') + 1 : 0);

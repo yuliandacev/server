@@ -52,11 +52,12 @@ use OCA\WorkflowEngine\Manager;
 use OCP\AppFramework\Http\IOutput;
 use OCP\AppFramework\IAppContainer;
 use OCP\AppFramework\QueryException;
+use OCP\AppFramework\Services\IAppConfig;
+use OCP\AppFramework\Services\IInitialState;
 use OCP\AppFramework\Utility\IControllerMethodReflector;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
 use OCP\Files\IAppData;
-use OCP\GlobalScale\IConfig;
 use OCP\Group\ISubAdmin;
 use OCP\IL10N;
 use OCP\ILogger;
@@ -152,10 +153,6 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 			return $c->getServer()->getThemingDefaults();
 		});
 
-		$this->registerService(IConfig::class, function ($c) {
-			return $c->query(OC\GlobalScale\Config::class);
-		});
-
 		$this->registerService('Protocol', function ($c) {
 			/** @var \OC\Server $server */
 			$server = $c->query('ServerContainer');
@@ -186,6 +183,13 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 			$server =  $this->getServer();
 
 			$dispatcher = new MiddlewareDispatcher();
+
+			$dispatcher->registerMiddleware(
+				$c->query(OC\AppFramework\Middleware\CompressionMiddleware::class)
+			);
+
+			$dispatcher->registerMiddleware($c->query(OC\AppFramework\Middleware\NotModifiedMiddleware::class));
+
 			$dispatcher->registerMiddleware(
 				$c->query(OC\AppFramework\Middleware\Security\ReloadExecutionMiddleware::class)
 			);
@@ -291,8 +295,8 @@ class DIContainer extends SimpleContainer implements IAppContainer {
 			return $dispatcher;
 		});
 
-		$this->registerAlias(\OCP\Collaboration\Resources\IProviderManager::class, OC\Collaboration\Resources\ProviderManager::class);
-		$this->registerAlias(\OCP\Collaboration\Resources\IManager::class, OC\Collaboration\Resources\Manager::class);
+		$this->registerAlias(IAppConfig::class, OC\AppFramework\Services\AppConfig::class);
+		$this->registerAlias(IInitialState::class, OC\AppFramework\Services\InitialState::class);
 	}
 
 	/**

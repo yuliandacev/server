@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * Copyright (c) 2015
  *
@@ -7,6 +8,8 @@
  * See the COPYING-README file.
  *
  */
+
+import escapeHTML from 'escape-html'
 
 /* global dav */
 
@@ -26,62 +29,62 @@
 	 * @since 8.2
 	 */
 	var Client = function(options) {
-		this._root = options.root;
+		this._root = options.root
 		if (this._root.charAt(this._root.length - 1) === '/') {
-			this._root = this._root.substr(0, this._root.length - 1);
+			this._root = this._root.substr(0, this._root.length - 1)
 		}
 
-		var url = Client.PROTOCOL_HTTP + '://';
+		let url = Client.PROTOCOL_HTTP + '://'
 		if (options.useHTTPS) {
-			url = Client.PROTOCOL_HTTPS + '://';
+			url = Client.PROTOCOL_HTTPS + '://'
 		}
 
-		url += options.host + this._root;
-		this._host = options.host;
+		url += options.host + this._root
+		this._host = options.host
 		this._defaultHeaders = options.defaultHeaders || {
-				'X-Requested-With': 'XMLHttpRequest',
-				'requesttoken': OC.requestToken
-			};
-		this._baseUrl = url;
+			'X-Requested-With': 'XMLHttpRequest',
+			'requesttoken': OC.requestToken,
+		}
+		this._baseUrl = url
 
-		var clientOptions = {
+		const clientOptions = {
 			baseUrl: this._baseUrl,
 			xmlNamespaces: {
 				'DAV:': 'd',
 				'http://owncloud.org/ns': 'oc',
 				'http://nextcloud.org/ns': 'nc',
-				'http://open-collaboration-services.org/ns': 'ocs'
-			}
-		};
+				'http://open-collaboration-services.org/ns': 'ocs',
+			},
+		}
 		if (options.userName) {
-			clientOptions.userName = options.userName;
+			clientOptions.userName = options.userName
 		}
 		if (options.password) {
-			clientOptions.password = options.password;
+			clientOptions.password = options.password
 		}
-		this._client = new dav.Client(clientOptions);
-		this._client.xhrProvider = _.bind(this._xhrProvider, this);
-		this._fileInfoParsers = [];
-	};
+		this._client = new dav.Client(clientOptions)
+		this._client.xhrProvider = _.bind(this._xhrProvider, this)
+		this._fileInfoParsers = []
+	}
 
-	Client.NS_OWNCLOUD = 'http://owncloud.org/ns';
-	Client.NS_NEXTCLOUD = 'http://nextcloud.org/ns';
-	Client.NS_DAV = 'DAV:';
-	Client.NS_OCS = 'http://open-collaboration-services.org/ns';
+	Client.NS_OWNCLOUD = 'http://owncloud.org/ns'
+	Client.NS_NEXTCLOUD = 'http://nextcloud.org/ns'
+	Client.NS_DAV = 'DAV:'
+	Client.NS_OCS = 'http://open-collaboration-services.org/ns'
 
-	Client.PROPERTY_GETLASTMODIFIED	= '{' + Client.NS_DAV + '}getlastmodified';
-	Client.PROPERTY_GETETAG	= '{' + Client.NS_DAV + '}getetag';
-	Client.PROPERTY_GETCONTENTTYPE	= '{' + Client.NS_DAV + '}getcontenttype';
-	Client.PROPERTY_RESOURCETYPE	= '{' + Client.NS_DAV + '}resourcetype';
-	Client.PROPERTY_INTERNAL_FILEID	= '{' + Client.NS_OWNCLOUD + '}fileid';
-	Client.PROPERTY_PERMISSIONS	= '{' + Client.NS_OWNCLOUD + '}permissions';
-	Client.PROPERTY_SIZE	= '{' + Client.NS_OWNCLOUD + '}size';
-	Client.PROPERTY_GETCONTENTLENGTH	= '{' + Client.NS_DAV + '}getcontentlength';
-	Client.PROPERTY_ISENCRYPTED	= '{' + Client.NS_DAV + '}is-encrypted';
-	Client.PROPERTY_SHARE_PERMISSIONS	= '{' + Client.NS_OCS + '}share-permissions';
+	Client.PROPERTY_GETLASTMODIFIED	= '{' + Client.NS_DAV + '}getlastmodified'
+	Client.PROPERTY_GETETAG	= '{' + Client.NS_DAV + '}getetag'
+	Client.PROPERTY_GETCONTENTTYPE	= '{' + Client.NS_DAV + '}getcontenttype'
+	Client.PROPERTY_RESOURCETYPE	= '{' + Client.NS_DAV + '}resourcetype'
+	Client.PROPERTY_INTERNAL_FILEID	= '{' + Client.NS_OWNCLOUD + '}fileid'
+	Client.PROPERTY_PERMISSIONS	= '{' + Client.NS_OWNCLOUD + '}permissions'
+	Client.PROPERTY_SIZE	= '{' + Client.NS_OWNCLOUD + '}size'
+	Client.PROPERTY_GETCONTENTLENGTH	= '{' + Client.NS_DAV + '}getcontentlength'
+	Client.PROPERTY_ISENCRYPTED	= '{' + Client.NS_DAV + '}is-encrypted'
+	Client.PROPERTY_SHARE_PERMISSIONS	= '{' + Client.NS_OCS + '}share-permissions'
 
-	Client.PROTOCOL_HTTP	= 'http';
-	Client.PROTOCOL_HTTPS	= 'https';
+	Client.PROTOCOL_HTTP	= 'http'
+	Client.PROTOCOL_HTTPS	= 'https'
 
 	Client._PROPFIND_PROPERTIES = [
 		/**
@@ -108,7 +111,7 @@
 		 * Letter-coded permissions
 		 */
 		[Client.NS_OWNCLOUD, 'permissions'],
-		//[Client.NS_OWNCLOUD, 'downloadURL'],
+		// [Client.NS_OWNCLOUD, 'downloadURL'],
 		/**
 		 * Folder sizes
 		 */
@@ -132,8 +135,8 @@
 		/**
 		 * Share permissions
 		 */
-		[Client.NS_OCS, 'share-permissions']
-	];
+		[Client.NS_OCS, 'share-permissions'],
+	]
 
 	/**
 	 * @memberof OC.Files
@@ -163,23 +166,23 @@
 
 		/**
 		 * Returns the configured XHR provider for davclient
-		 * @return {XMLHttpRequest}
+		 * @returns {XMLHttpRequest}
 		 */
 		_xhrProvider: function() {
-			var headers = this._defaultHeaders;
-			var xhr = new XMLHttpRequest();
-			var oldOpen = xhr.open;
+			const headers = this._defaultHeaders
+			const xhr = new XMLHttpRequest()
+			const oldOpen = xhr.open
 			// override open() method to add headers
 			xhr.open = function() {
-				var result = oldOpen.apply(this, arguments);
+				const result = oldOpen.apply(this, arguments)
 				_.each(headers, function(value, key) {
-					xhr.setRequestHeader(key, value);
-				});
-				return result;
-			};
+					xhr.setRequestHeader(key, value)
+				})
+				return result
+			}
 
-			OC.registerXHRForErrorProcessing(xhr);
-			return xhr;
+			OC.registerXHRForErrorProcessing(xhr)
+			return xhr
 		},
 
 		/**
@@ -187,18 +190,18 @@
 		 *
 		 * @param {...String} path sections
 		 *
-		 * @return {String} base url + joined path, any leading or trailing slash
+		 * @returns {String} base url + joined path, any leading or trailing slash
 		 * will be kept
 		 */
 		_buildUrl: function() {
-			var path = this._buildPath.apply(this, arguments);
+			let path = this._buildPath.apply(this, arguments)
 			if (path.charAt([path.length - 1]) === '/') {
-				path = path.substr(0, path.length - 1);
+				path = path.substr(0, path.length - 1)
 			}
 			if (path.charAt(0) === '/') {
-				path = path.substr(1);
+				path = path.substr(1)
 			}
-			return this._baseUrl + '/' + path;
+			return this._baseUrl + '/' + path
 		},
 
 		/**
@@ -207,18 +210,18 @@
 		 *
 		 * @param {...String} path sections
 		 *
-		 * @return {String} joined path, any leading or trailing slash
+		 * @returns {String} joined path, any leading or trailing slash
 		 * will be kept
 		 */
 		_buildPath: function() {
-			var path = OC.joinPaths.apply(this, arguments);
-			var sections = path.split('/');
-			var i;
+			let path = OC.joinPaths.apply(this, arguments)
+			const sections = path.split('/')
+			let i
 			for (i = 0; i < sections.length; i++) {
-				sections[i] = encodeURIComponent(sections[i]);
+				sections[i] = encodeURIComponent(sections[i])
 			}
-			path = sections.join('/');
-			return path;
+			path = sections.join('/')
+			return path
 		},
 
 		/**
@@ -226,28 +229,28 @@
 		 *
 		 * @param {string} headersString headers list as string
 		 *
-		 * @return {Object.<String,Array>} map of header name to header contents
+		 * @returns {Object.<String,Array>} map of header name to header contents
 		 */
 		_parseHeaders: function(headersString) {
-			var headerRows = headersString.split('\n');
-			var headers = {};
-			for (var i = 0; i < headerRows.length; i++) {
-				var sepPos = headerRows[i].indexOf(':');
+			const headerRows = headersString.split('\n')
+			const headers = {}
+			for (let i = 0; i < headerRows.length; i++) {
+				const sepPos = headerRows[i].indexOf(':')
 				if (sepPos < 0) {
-					continue;
+					continue
 				}
 
-				var headerName = headerRows[i].substr(0, sepPos);
-				var headerValue = headerRows[i].substr(sepPos + 2);
+				const headerName = headerRows[i].substr(0, sepPos)
+				const headerValue = headerRows[i].substr(sepPos + 2)
 
 				if (!headers[headerName]) {
 					// make it an array
-					headers[headerName] = [];
+					headers[headerName] = []
 				}
 
-				headers[headerName].push(headerValue);
+				headers[headerName].push(headerValue)
 			}
-			return headers;
+			return headers
 		},
 
 		/**
@@ -255,13 +258,13 @@
 		 *
 		 * @param {string} etag etag value in double quotes
 		 *
-		 * @return {string} etag without double quotes
+		 * @returns {string} etag without double quotes
 		 */
 		_parseEtag: function(etag) {
 			if (etag.charAt(0) === '"') {
-				return etag.split('"')[1];
+				return etag.split('"')[1]
 			}
-			return etag;
+			return etag
 		},
 
 		/**
@@ -269,137 +272,137 @@
 		 *
 		 * @param {Object} response XML object
 		 *
-		 * @return {Array.<FileInfo>} array of file info
+		 * @returns {Array.<FileInfo>} array of file info
 		 */
 		_parseFileInfo: function(response) {
-			var path = decodeURIComponent(response.href);
+			let path = decodeURIComponent(response.href)
 			if (path.substr(0, this._root.length) === this._root) {
-				path = path.substr(this._root.length);
+				path = path.substr(this._root.length)
 			}
 
 			if (path.charAt(path.length - 1) === '/') {
-				path = path.substr(0, path.length - 1);
+				path = path.substr(0, path.length - 1)
 			}
 
 			if (response.propStat.length === 0 || response.propStat[0].status !== 'HTTP/1.1 200 OK') {
-				return null;
+				return null
 			}
 
-			var props = response.propStat[0].properties;
+			const props = response.propStat[0].properties
 
-			var data = {
+			const data = {
 				id: props[Client.PROPERTY_INTERNAL_FILEID],
 				path: OC.dirname(path) || '/',
 				name: OC.basename(path),
-				mtime: (new Date(props[Client.PROPERTY_GETLASTMODIFIED])).getTime()
-			};
+				mtime: (new Date(props[Client.PROPERTY_GETLASTMODIFIED])).getTime(),
+			}
 
-			var etagProp = props[Client.PROPERTY_GETETAG];
+			const etagProp = props[Client.PROPERTY_GETETAG]
 			if (!_.isUndefined(etagProp)) {
-				data.etag = this._parseEtag(etagProp);
+				data.etag = this._parseEtag(etagProp)
 			}
 
-			var sizeProp = props[Client.PROPERTY_GETCONTENTLENGTH];
+			let sizeProp = props[Client.PROPERTY_GETCONTENTLENGTH]
 			if (!_.isUndefined(sizeProp)) {
-				data.size = parseInt(sizeProp, 10);
+				data.size = parseInt(sizeProp, 10)
 			}
 
-			sizeProp = props[Client.PROPERTY_SIZE];
+			sizeProp = props[Client.PROPERTY_SIZE]
 			if (!_.isUndefined(sizeProp)) {
-				data.size = parseInt(sizeProp, 10);
+				data.size = parseInt(sizeProp, 10)
 			}
 
-			var hasPreviewProp = props['{' + Client.NS_NEXTCLOUD + '}has-preview'];
+			const hasPreviewProp = props['{' + Client.NS_NEXTCLOUD + '}has-preview']
 			if (!_.isUndefined(hasPreviewProp)) {
-				data.hasPreview = hasPreviewProp === 'true';
+				data.hasPreview = hasPreviewProp === 'true'
 			} else {
-				data.hasPreview = true;
+				data.hasPreview = true
 			}
 
-			var isEncryptedProp = props['{' + Client.NS_NEXTCLOUD + '}is-encrypted'];
+			const isEncryptedProp = props['{' + Client.NS_NEXTCLOUD + '}is-encrypted']
 			if (!_.isUndefined(isEncryptedProp)) {
-				data.isEncrypted = isEncryptedProp === '1';
+				data.isEncrypted = isEncryptedProp === '1'
 			} else {
-				data.isEncrypted = false;
+				data.isEncrypted = false
 			}
 
-			var isFavouritedProp = props['{' + Client.NS_OWNCLOUD + '}favorite'];
+			const isFavouritedProp = props['{' + Client.NS_OWNCLOUD + '}favorite']
 			if (!_.isUndefined(isFavouritedProp)) {
-				data.isFavourited = isFavouritedProp === '1';
+				data.isFavourited = isFavouritedProp === '1'
 			} else {
-				data.isFavourited = false;
+				data.isFavourited = false
 			}
 
-			var contentType = props[Client.PROPERTY_GETCONTENTTYPE];
+			const contentType = props[Client.PROPERTY_GETCONTENTTYPE]
 			if (!_.isUndefined(contentType)) {
-				data.mimetype = contentType;
+				data.mimetype = contentType
 			}
 
-			var resType = props[Client.PROPERTY_RESOURCETYPE];
+			const resType = props[Client.PROPERTY_RESOURCETYPE]
 			if (!data.mimetype && resType) {
-				var xmlvalue = resType[0];
+				const xmlvalue = resType[0]
 				if (xmlvalue.namespaceURI === Client.NS_DAV && xmlvalue.nodeName.split(':')[1] === 'collection') {
-					data.mimetype = 'httpd/unix-directory';
+					data.mimetype = 'httpd/unix-directory'
 				}
 			}
 
-			data.permissions = OC.PERMISSION_NONE;
-			var permissionProp = props[Client.PROPERTY_PERMISSIONS];
+			data.permissions = OC.PERMISSION_NONE
+			const permissionProp = props[Client.PROPERTY_PERMISSIONS]
 			if (!_.isUndefined(permissionProp)) {
-				var permString = permissionProp || '';
-				data.mountType = null;
-				for (var i = 0; i < permString.length; i++) {
-					var c = permString.charAt(i);
+				const permString = permissionProp || ''
+				data.mountType = null
+				for (let i = 0; i < permString.length; i++) {
+					const c = permString.charAt(i)
 					switch (c) {
-						// FIXME: twisted permissions
-						case 'C':
-						case 'K':
-							data.permissions |= OC.PERMISSION_CREATE;
-							break;
-						case 'G':
-							data.permissions |= OC.PERMISSION_READ;
-							break;
-						case 'W':
-						case 'N':
-						case 'V':
-							data.permissions |= OC.PERMISSION_UPDATE;
-							break;
-						case 'D':
-							data.permissions |= OC.PERMISSION_DELETE;
-							break;
-						case 'R':
-							data.permissions |= OC.PERMISSION_SHARE;
-							break;
-						case 'M':
-							if (!data.mountType) {
-								// TODO: how to identify external-root ?
-								data.mountType = 'external';
-							}
-							break;
-						case 'S':
-							// TODO: how to identify shared-root ?
-							data.mountType = 'shared';
-							break;
+					// FIXME: twisted permissions
+					case 'C':
+					case 'K':
+						data.permissions |= OC.PERMISSION_CREATE
+						break
+					case 'G':
+						data.permissions |= OC.PERMISSION_READ
+						break
+					case 'W':
+					case 'N':
+					case 'V':
+						data.permissions |= OC.PERMISSION_UPDATE
+						break
+					case 'D':
+						data.permissions |= OC.PERMISSION_DELETE
+						break
+					case 'R':
+						data.permissions |= OC.PERMISSION_SHARE
+						break
+					case 'M':
+						if (!data.mountType) {
+							// TODO: how to identify external-root ?
+							data.mountType = 'external'
+						}
+						break
+					case 'S':
+						// TODO: how to identify shared-root ?
+						data.mountType = 'shared'
+						break
 					}
 				}
 			}
 
-			var sharePermissionsProp = props[Client.PROPERTY_SHARE_PERMISSIONS];
+			const sharePermissionsProp = props[Client.PROPERTY_SHARE_PERMISSIONS]
 			if (!_.isUndefined(sharePermissionsProp)) {
-				data.sharePermissions = parseInt(sharePermissionsProp);
+				data.sharePermissions = parseInt(sharePermissionsProp)
 			}
 
-			var mounTypeProp = props['{' + Client.NS_NEXTCLOUD + '}mount-type'];
+			const mounTypeProp = props['{' + Client.NS_NEXTCLOUD + '}mount-type']
 			if (!_.isUndefined(mounTypeProp)) {
-				data.mountType = mounTypeProp;
+				data.mountType = mounTypeProp
 			}
 
 			// extend the parsed data using the custom parsers
 			_.each(this._fileInfoParsers, function(parserFunction) {
-				_.extend(data, parserFunction(response, data) || {});
-			});
+				_.extend(data, parserFunction(response, data) || {})
+			})
 
-			return new FileInfo(data);
+			return new FileInfo(data)
 		},
 
 		/**
@@ -408,10 +411,10 @@
 		 * @param {Array} responses
 		 */
 		_parseResult: function(responses) {
-			var self = this;
+			const self = this
 			return _.map(responses, function(response) {
-				return self._parseFileInfo(response);
-			});
+				return self._parseFileInfo(response)
+			})
 		},
 
 		/**
@@ -419,47 +422,47 @@
 		 *
 		 * @param {int} status status code
 		 *
-		 * @return true if status code is between 200 and 299 included
+		 * @returns true if status code is between 200 and 299 included
 		 */
 		_isSuccessStatus: function(status) {
-			return status >= 200 && status <= 299;
+			return status >= 200 && status <= 299
 		},
 
 		/**
 		 * Parse the Sabre exception out of the given response, if any
 		 *
 		 * @param {Object} response object
-		 * @return {Object} array of parsed message and exception (only the first one)
+		 * @returns {Object} array of parsed message and exception (only the first one)
 		 */
 		_getSabreException: function(response) {
-			var result = {};
-			var xml = response.xhr.responseXML;
+			const result = {}
+			const xml = response.xhr.responseXML
 			if (xml === null) {
-				return result;
+				return result
 			}
-			var messages = xml.getElementsByTagNameNS('http://sabredav.org/ns', 'message');
-			var exceptions = xml.getElementsByTagNameNS('http://sabredav.org/ns', 'exception');
+			const messages = xml.getElementsByTagNameNS('http://sabredav.org/ns', 'message')
+			const exceptions = xml.getElementsByTagNameNS('http://sabredav.org/ns', 'exception')
 			if (messages.length) {
-				result.message = messages[0].textContent;
+				result.message = messages[0].textContent
 			}
 			if (exceptions.length) {
-				result.exception = exceptions[0].textContent;
+				result.exception = exceptions[0].textContent
 			}
-			return result;
+			return result
 		},
 
 		/**
 		 * Returns the default PROPFIND properties to use during a call.
 		 *
-		 * @return {Array.<Object>} array of properties
+		 * @returns {Array.<Object>} array of properties
 		 */
 		getPropfindProperties: function() {
 			if (!this._propfindProperties) {
 				this._propfindProperties = _.map(Client._PROPFIND_PROPERTIES, function(propDef) {
-					return '{' + propDef[0] + '}' + propDef[1];
-				});
+					return '{' + propDef[0] + '}' + propDef[1]
+				})
 			}
-			return this._propfindProperties;
+			return this._propfindProperties
 		},
 
 		/**
@@ -471,21 +474,21 @@
 		 * the parent folder in the result list
 		 * @param {Array} [options.properties] list of Webdav properties to retrieve
 		 *
-		 * @return {Promise} promise
+		 * @returns {Promise} promise
 		 */
 		getFolderContents: function(path, options) {
 			if (!path) {
-				path = '';
+				path = ''
 			}
-			options = options || {};
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
-			var properties;
+			options = options || {}
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
+			let properties
 			if (_.isUndefined(options.properties)) {
-				properties = this.getPropfindProperties();
+				properties = this.getPropfindProperties()
 			} else {
-				properties = options.properties;
+				properties = options.properties
 			}
 
 			this._client.propFind(
@@ -494,18 +497,18 @@
 				1
 			).then(function(result) {
 				if (self._isSuccessStatus(result.status)) {
-					var results = self._parseResult(result.body);
+					const results = self._parseResult(result.body)
 					if (!options || !options.includeParent) {
 						// remove root dir, the first entry
-						results.shift();
+						results.shift()
 					}
-					deferred.resolve(result.status, results);
+					deferred.resolve(result.status, results)
 				} else {
-					result = _.extend(result, self._getSabreException(result));
-					deferred.reject(result.status, result);
+					result = _.extend(result, self._getSabreException(result))
+					deferred.reject(result.status, result)
 				}
-			});
-			return promise;
+			})
+			return promise
 		},
 
 		/**
@@ -518,57 +521,57 @@
 		 * @param {Object} [options] options
 		 * @param {Array} [options.properties] list of Webdav properties to retrieve
 		 *
-		 * @return {Promise} promise
+		 * @returns {Promise} promise
 		 */
 		getFilteredFiles: function(filter, options) {
-			options = options || {};
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
-			var properties;
+			options = options || {}
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
+			let properties
 			if (_.isUndefined(options.properties)) {
-				properties = this.getPropfindProperties();
+				properties = this.getPropfindProperties()
 			} else {
-				properties = options.properties;
+				properties = options.properties
 			}
 
-			if (!filter ||
-				(!filter.systemTagIds && _.isUndefined(filter.favorite) && !filter.circlesIds) ) {
-				throw 'Missing filter argument';
+			if (!filter
+				|| (!filter.systemTagIds && _.isUndefined(filter.favorite) && !filter.circlesIds)) {
+				throw 'Missing filter argument'
 			}
 
 			// root element with namespaces
-            var body = '<oc:filter-files ';
-			var namespace;
+			let body = '<oc:filter-files '
+			let namespace
 			for (namespace in this._client.xmlNamespaces) {
-				body += ' xmlns:' + this._client.xmlNamespaces[namespace] + '="' + namespace + '"';
+				body += ' xmlns:' + this._client.xmlNamespaces[namespace] + '="' + namespace + '"'
 			}
-			body += '>\n';
+			body += '>\n'
 
 			// properties query
-			body += '    <' + this._client.xmlNamespaces['DAV:'] + ':prop>\n';
+			body += '    <' + this._client.xmlNamespaces['DAV:'] + ':prop>\n'
 			_.each(properties, function(prop) {
-				var property = self._client.parseClarkNotation(prop);
-                body += '        <' + self._client.xmlNamespaces[property.namespace] + ':' + property.name + ' />\n';
-			});
+				const property = self._client.parseClarkNotation(prop)
+				body += '        <' + self._client.xmlNamespaces[property.namespace] + ':' + property.name + ' />\n'
+			})
 
-			body += '    </' + this._client.xmlNamespaces['DAV:'] + ':prop>\n';
+			body += '    </' + this._client.xmlNamespaces['DAV:'] + ':prop>\n'
 
 			// rules block
-			body +=	'    <oc:filter-rules>\n';
+			body +=	'    <oc:filter-rules>\n'
 			_.each(filter.systemTagIds, function(systemTagIds) {
-				body += '        <oc:systemtag>' + escapeHTML(systemTagIds) + '</oc:systemtag>\n';
-			});
+				body += '        <oc:systemtag>' + escapeHTML(systemTagIds) + '</oc:systemtag>\n'
+			})
 			_.each(filter.circlesIds, function(circlesIds) {
-				body += '        <oc:circle>' + escapeHTML(circlesIds) + '</oc:circle>\n';
-			});
+				body += '        <oc:circle>' + escapeHTML(circlesIds) + '</oc:circle>\n'
+			})
 			if (filter.favorite) {
-				body += '        <oc:favorite>' + (filter.favorite ? '1': '0') + '</oc:favorite>\n';
+				body += '        <oc:favorite>' + (filter.favorite ? '1' : '0') + '</oc:favorite>\n'
 			}
-			body += '    </oc:filter-rules>\n';
+			body += '    </oc:filter-rules>\n'
 
 			// end of root
-			body += '</oc:filter-files>\n';
+			body += '</oc:filter-files>\n'
 
 			this._client.request(
 				'REPORT',
@@ -577,14 +580,14 @@
 				body
 			).then(function(result) {
 				if (self._isSuccessStatus(result.status)) {
-					var results = self._parseResult(result.body);
-					deferred.resolve(result.status, results);
+					const results = self._parseResult(result.body)
+					deferred.resolve(result.status, results)
 				} else {
-					result = _.extend(result, self._getSabreException(result));
-					deferred.reject(result.status, result);
+					result = _.extend(result, self._getSabreException(result))
+					deferred.reject(result.status, result)
 				}
-			});
-			return promise;
+			})
+			return promise
 		},
 
 		/**
@@ -593,21 +596,21 @@
 		 * @param {String} path path
 		 * @param {Array} [options.properties] list of Webdav properties to retrieve
 		 *
-		 * @return {Promise} promise
+		 * @returns {Promise} promise
 		 */
 		getFileInfo: function(path, options) {
 			if (!path) {
-				path = '';
+				path = ''
 			}
-			options = options || {};
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
-			var properties;
+			options = options || {}
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
+			let properties
 			if (_.isUndefined(options.properties)) {
-				properties = this.getPropfindProperties();
+				properties = this.getPropfindProperties()
 			} else {
-				properties = options.properties;
+				properties = options.properties
 			}
 
 			// TODO: headers
@@ -618,14 +621,14 @@
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
-						deferred.resolve(result.status, self._parseResult([result.body])[0]);
+						deferred.resolve(result.status, self._parseResult([result.body])[0])
 					} else {
-						result = _.extend(result, self._getSabreException(result));
-						deferred.reject(result.status, result);
+						result = _.extend(result, self._getSabreException(result))
+						deferred.reject(result.status, result)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		/**
@@ -633,15 +636,15 @@
 		 *
 		 * @param {String} path path to file
 		 *
-		 * @return {Promise}
+		 * @returns {Promise}
 		 */
 		getFileContents: function(path) {
 			if (!path) {
-				throw 'Missing argument "path"';
+				throw 'Missing argument "path"'
 			}
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
 
 			this._client.request(
 				'GET',
@@ -649,14 +652,14 @@
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
-						deferred.resolve(result.status, result.body);
+						deferred.resolve(result.status, result.body)
 					} else {
-						result = _.extend(result, self._getSabreException(result));
-						deferred.reject(result.status, result);
+						result = _.extend(result, self._getSabreException(result))
+						deferred.reject(result.status, result)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		/**
@@ -668,27 +671,27 @@
 		 * @param {String} [options.contentType='text/plain'] content type
 		 * @param {bool} [options.overwrite=true] whether to overwrite an existing file
 		 *
-		 * @return {Promise}
+		 * @returns {Promise}
 		 */
 		putFileContents: function(path, body, options) {
 			if (!path) {
-				throw 'Missing argument "path"';
+				throw 'Missing argument "path"'
 			}
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
-			options = options || {};
-			var headers = {};
-			var contentType = 'text/plain;charset=utf-8';
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
+			options = options || {}
+			const headers = {}
+			let contentType = 'text/plain;charset=utf-8'
 			if (options.contentType) {
-				contentType = options.contentType;
+				contentType = options.contentType
 			}
 
-			headers['Content-Type'] = contentType;
+			headers['Content-Type'] = contentType
 
 			if (_.isUndefined(options.overwrite) || options.overwrite) {
 				// will trigger 412 precondition failed if a file already exists
-				headers['If-None-Match'] = '*';
+				headers['If-None-Match'] = '*'
 			}
 
 			this._client.request(
@@ -699,24 +702,24 @@
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
-						deferred.resolve(result.status);
+						deferred.resolve(result.status)
 					} else {
-						result = _.extend(result, self._getSabreException(result));
-						deferred.reject(result.status, result);
+						result = _.extend(result, self._getSabreException(result))
+						deferred.reject(result.status, result)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		_simpleCall: function(method, path) {
 			if (!path) {
-				throw 'Missing argument "path"';
+				throw 'Missing argument "path"'
 			}
 
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
 
 			this._client.request(
 				method,
@@ -724,14 +727,14 @@
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
-						deferred.resolve(result.status);
+						deferred.resolve(result.status)
 					} else {
-						result = _.extend(result, self._getSabreException(result));
-						deferred.reject(result.status, result);
+						result = _.extend(result, self._getSabreException(result))
+						deferred.reject(result.status, result)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		/**
@@ -739,10 +742,10 @@
 		 *
 		 * @param {String} path path to create
 		 *
-		 * @return {Promise}
+		 * @returns {Promise}
 		 */
 		createDirectory: function(path) {
-			return this._simpleCall('MKCOL', path);
+			return this._simpleCall('MKCOL', path)
 		},
 
 		/**
@@ -750,10 +753,10 @@
 		 *
 		 * @param {String} path path to delete
 		 *
-		 * @return {Promise}
+		 * @returns {Promise}
 		 */
 		remove: function(path) {
-			return this._simpleCall('DELETE', path);
+			return this._simpleCall('DELETE', path)
 		},
 
 		/**
@@ -765,25 +768,25 @@
 		 * false otherwise
 		 * @param {Object} [headers=null] additional headers
 		 *
-		 * @return {Promise} promise
+		 * @returns {Promise} promise
 		 */
 		move: function(path, destinationPath, allowOverwrite, headers) {
 			if (!path) {
-				throw 'Missing argument "path"';
+				throw 'Missing argument "path"'
 			}
 			if (!destinationPath) {
-				throw 'Missing argument "destinationPath"';
+				throw 'Missing argument "destinationPath"'
 			}
 
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
 			headers = _.extend({}, headers, {
-				'Destination' : this._buildUrl(destinationPath)
-			});
+				'Destination': this._buildUrl(destinationPath),
+			})
 
 			if (!allowOverwrite) {
-				headers.Overwrite = 'F';
+				headers.Overwrite = 'F'
 			}
 
 			this._client.request(
@@ -793,14 +796,14 @@
 			).then(
 				function(result) {
 					if (self._isSuccessStatus(result.status)) {
-						deferred.resolve(result.status);
+						deferred.resolve(result.status)
 					} else {
-						result = _.extend(result, self._getSabreException(result));
-						deferred.reject(result.status, result);
+						result = _.extend(result, self._getSabreException(result))
+						deferred.reject(result.status, result)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		/**
@@ -811,25 +814,25 @@
 		 * @param {boolean} [allowOverwrite=false] true to allow overwriting,
 		 * false otherwise
 		 *
-		 * @return {Promise} promise
+		 * @returns {Promise} promise
 		 */
-		copy: function (path, destinationPath, allowOverwrite) {
+		copy: function(path, destinationPath, allowOverwrite) {
 			if (!path) {
-				throw 'Missing argument "path"';
+				throw 'Missing argument "path"'
 			}
 			if (!destinationPath) {
-				throw 'Missing argument "destinationPath"';
+				throw 'Missing argument "destinationPath"'
 			}
 
-			var self = this;
-			var deferred = $.Deferred();
-			var promise = deferred.promise();
-			var headers = {
-				'Destination' : this._buildUrl(destinationPath)
-			};
+			const self = this
+			const deferred = $.Deferred()
+			const promise = deferred.promise()
+			const headers = {
+				'Destination': this._buildUrl(destinationPath),
+			}
 
 			if (!allowOverwrite) {
-				headers.Overwrite = 'F';
+				headers.Overwrite = 'F'
 			}
 
 			this._client.request(
@@ -839,13 +842,13 @@
 			).then(
 				function(response) {
 					if (self._isSuccessStatus(response.status)) {
-						deferred.resolve(response.status);
+						deferred.resolve(response.status)
 					} else {
-						deferred.reject(response.status);
+						deferred.reject(response.status)
 					}
 				}
-			);
-			return promise;
+			)
+			return promise
 		},
 
 		/**
@@ -854,59 +857,59 @@
 		 * @param {OC.Files.Client~parseFileInfo} parserFunction
 		 */
 		addFileInfoParser: function(parserFunction) {
-			this._fileInfoParsers.push(parserFunction);
+			this._fileInfoParsers.push(parserFunction)
 		},
 
 		/**
 		 * Returns the dav.Client instance used internally
 		 *
 		 * @since 11.0.0
-		 * @return {dav.Client}
+		 * @returns {dav.Client}
 		 */
 		getClient: function() {
-			return this._client;
+			return this._client
 		},
 
 		/**
 		 * Returns the user name
 		 *
 		 * @since 11.0.0
-		 * @return {String} userName
+		 * @returns {String} userName
 		 */
 		getUserName: function() {
-			return this._client.userName;
+			return this._client.userName
 		},
 
 		/**
 		 * Returns the password
 		 *
 		 * @since 11.0.0
-		 * @return {String} password
+		 * @returns {String} password
 		 */
 		getPassword: function() {
-			return this._client.password;
+			return this._client.password
 		},
 
 		/**
 		 * Returns the base URL
 		 *
 		 * @since 11.0.0
-		 * @return {String} base URL
+		 * @returns {String} base URL
 		 */
 		getBaseUrl: function() {
-			return this._client.baseUrl;
+			return this._client.baseUrl
 		},
 
 		/**
 		 * Returns the host
 		 *
 		 * @since 13.0.0
-		 * @return {String} base URL
+		 * @returns {String} base URL
 		 */
 		getHost: function() {
-			return this._host;
-		}
-	};
+			return this._host
+		},
+	}
 
 	/**
 	 * File info parser function
@@ -925,30 +928,30 @@
 		 *
 		 * @since 8.2
 		 */
-		OC.Files = {};
+		OC.Files = {}
 	}
 
 	/**
 	 * Returns the default instance of the files client
 	 *
-	 * @return {OC.Files.Client} default client
+	 * @returns {OC.Files.Client} default client
 	 *
 	 * @since 8.2
 	 */
 	OC.Files.getClient = function() {
 		if (OC.Files._defaultClient) {
-			return OC.Files._defaultClient;
+			return OC.Files._defaultClient
 		}
 
-		var client = new OC.Files.Client({
+		const client = new OC.Files.Client({
 			host: OC.getHost(),
 			port: OC.getPort(),
 			root: OC.linkToRemoteBase('dav') + '/files/' + OC.getCurrentUser().uid,
-			useHTTPS: OC.getProtocol() === 'https'
-		});
-		OC.Files._defaultClient = client;
-		return client;
-	};
+			useHTTPS: OC.getProtocol() === 'https',
+		})
+		OC.Files._defaultClient = client
+		return client
+	}
 
-	OC.Files.Client = Client;
-})(OC, OC.Files.FileInfo);
+	OC.Files.Client = Client
+})(OC, OC.Files.FileInfo)

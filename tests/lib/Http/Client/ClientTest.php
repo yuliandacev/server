@@ -292,6 +292,7 @@ class ClientTest extends \Test\TestCase {
 			],
 			'headers' => [
 				'User-Agent' => 'Nextcloud Server Crawler',
+				'Accept-Encoding' => 'gzip',
 			],
 			'timeout' => 30,
 		];
@@ -460,14 +461,14 @@ class ClientTest extends \Test\TestCase {
 			->with('installed', false)
 			->willReturn(false);
 		$this->certificateManager
-			->expects($this->once())
-			->method('listCertificates')
-			->willReturn([]);
+			->expects($this->never())
+			->method('listCertificates');
 
 		$this->assertEquals([
 			'verify' => \OC::$SERVERROOT . '/resources/config/ca-bundle.crt',
 			'headers' => [
-				'User-Agent' => 'Nextcloud Server Crawler'
+				'User-Agent' => 'Nextcloud Server Crawler',
+				'Accept-Encoding' => 'gzip',
 			],
 			'timeout' => 30,
 		], self::invokePrivate($this->client, 'buildRequestOptions', [[]]));
@@ -502,7 +503,8 @@ class ClientTest extends \Test\TestCase {
 				'https' => 'foo'
 			],
 			'headers' => [
-				'User-Agent' => 'Nextcloud Server Crawler'
+				'User-Agent' => 'Nextcloud Server Crawler',
+				'Accept-Encoding' => 'gzip',
 			],
 			'timeout' => 30,
 		], self::invokePrivate($this->client, 'buildRequestOptions', [[]]));
@@ -538,7 +540,8 @@ class ClientTest extends \Test\TestCase {
 				'no' => ['bar']
 			],
 			'headers' => [
-				'User-Agent' => 'Nextcloud Server Crawler'
+				'User-Agent' => 'Nextcloud Server Crawler',
+				'Accept-Encoding' => 'gzip',
 			],
 			'timeout' => 30,
 		], self::invokePrivate($this->client, 'buildRequestOptions', [[]]));

@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * Copyright (c) 2015
  *
@@ -18,35 +19,35 @@
 	 *
 	 * @since 8.2
 	 */
-	var FileInfo = function(data) {
-		var self = this;
+	const FileInfo = function(data) {
+		const self = this
 		_.each(data, function(value, key) {
 			if (!_.isFunction(value)) {
-				self[key] = value;
+				self[key] = value
 			}
-		});
+		})
 
 		if (!_.isUndefined(this.id)) {
-			this.id = parseInt(data.id, 10);
+			this.id = parseInt(data.id, 10)
 		}
 
 		// TODO: normalize path
-		this.path = data.path || '';
+		this.path = data.path || ''
 
 		if (this.type === 'dir') {
-			this.mimetype = 'httpd/unix-directory';
+			this.mimetype = 'httpd/unix-directory'
 		} else {
-			this.mimetype = this.mimetype || 'application/octet-stream';
+			this.mimetype = this.mimetype || 'application/octet-stream'
 		}
 
 		if (!this.type) {
 			if (this.mimetype === 'httpd/unix-directory') {
-				this.type = 'dir';
+				this.type = 'dir'
 			} else {
-				this.type = 'file';
+				this.type = 'file'
 			}
 		}
-	};
+	}
 
 	/**
 	 * @memberof OC.Files
@@ -137,12 +138,11 @@
 		/**
 		 * @type int
 		 */
-		sharePermissions: null
-	};
+		sharePermissions: null,
+	}
 
 	if (!OC.Files) {
-		OC.Files = {};
+		OC.Files = {}
 	}
-	OC.Files.FileInfo = FileInfo;
-})(OC);
-
+	OC.Files.FileInfo = FileInfo
+})(OC)
