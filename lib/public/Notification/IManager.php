@@ -91,4 +91,16 @@ interface IManager extends IApp, INotifier {
 	 * @since 18.0.0
 	 */
 	public function dismissNotification(INotification $notification): void;
+
+	/**
+	 * The calling app should only "flush" when it got returned true on the defer call
+	 * @return bool
+	 * @since 20.0.0
+	 */
+	public function defer(): bool;
+
+	/**
+	 * @since 20.0.0
+	 */
+	public function flush(): void;
 }
