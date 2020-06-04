@@ -760,7 +760,7 @@ class CardDavBackendTest extends TestCase {
 			'check if duplicates are handled correctly' => ['John', ['FN', 'CLOUD'], [], [['uri0', 'John Doe'], ['uri1', 'John M. Doe']]],
 			'case insensitive' => ['john', ['FN'], [], [['uri0', 'John Doe'], ['uri1', 'John M. Doe']]],
 			'find "_" escaped' => ['_', ['CLOUD'], [], [['uri2', 'find without options']]],
-			'find not empty ClOUD' => ['%_%', ['CLOUD'], ['escape_like_param'=>false], [['uri0', 'John Doe'], ['uri2', 'find without options']]],
+			'find not empty CLOUD' => ['%_%', ['CLOUD'], ['escape_like_param'=>false], [['uri0', 'John Doe'], ['uri2', 'find without options']]],
 		];
 	}
 
