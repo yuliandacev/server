@@ -25,42 +25,234 @@ declare(strict_types=1);
 
 namespace OC\AppFramework\Bootstrap;
 
+use Closure;
+use OC\ServerContainer;
+use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\ILogger;
+use Throwable;
 
-class RegistrationContext implements IRegistrationContext {
+class RegistrationContext {
 
+	/** @var array[] */
+	private $capabilities;
+
+	/** @var array[] */
+	private $services = [];
+
+	/** @var array[] */
+	private $aliases = [];
+
+	/** @var array[] */
+	private $parameters = [];
+
+	/** @var array[] */
 	private $eventListeners = [];
 
-	/**
-	 * @inheritDoc
-	 */
-	public function registerService(string $name, callable $factory, bool $shared = true): void {
-		// TODO: Implement registerService() method.
+	/** @var ILogger */
+	private $logger;
+
+	public function __construct(ILogger $logger) {
+		$this->logger = $logger;
+	}
+
+	public function for(string $appId): IRegistrationContext {
+		return new class($appId, $this) implements IRegistrationContext {
+			/** @var string */
+			private $appId;
+
+			/** @var RegistrationContext */
+			private $context;
+
+			public function __construct(string $appId, RegistrationContext $context) {
+				$this->appId = $appId;
+				$this->context = $context;
+			}
+
+			public function registerCapability(string $capability): void {
+
+			}
+
+			public function registerService(string $name, callable $factory, bool $shared = true): void {
+				$this->context->registerService(
+					$this->appId,
+					$name,
+					$factory,
+					$shared
+				);
+			}
+
+			public function registerServiceAlias(string $alias, string $target): void {
+				$this->context->registerServiceAlias(
+					$this->appId,
+					$alias,
+					$target
+				);
+			}
+
+			public function registerParameter(string $name, $value): void {
+				$this->context->registerParameter(
+					$this->appId,
+					$name,
+					$value
+				);
+			}
+
+			public function registerEventListener(string $event, string $listener, int $priority = 0): void {
+				$this->context->registerEventListener(
+					$this->appId,
+					$event,
+					$listener,
+					$priority
+				);
+			}
+		};
+	}
+
+	public function registerCapability(string $appId, string $capability): void {
+		$this->capabilities[] = [
+			'appId' => $appId,
+			'capability' => $capability
+		];
+	}
+
+	public function registerService(string $appId, string $name, callable $factory, bool $shared = true): void {
+		$this->services[] = [
+			"appId" => $appId,
+			"name" => $name,
+			"factory" => $factory,
+			"sharred" => $shared,
+		];
+	}
+
+	public function registerServiceAlias(string $appId, string $alias, string $target): void {
+		$this->aliases[] = [
+			"appId" => $appId,
+			"alias" => $alias,
+			"target" => $target,
+		];
+	}
+
+	public function registerParameter(string $appId, string $name, $value): void {
+		$this->aliases[] = [
+			"appId" => $appId,
+			"name" => $name,
+			"value" => $value,
+		];
+	}
+
+	public function registerEventListener(string $appId, string $event, string $listener, int $priority = 0): void {
+		$this->eventListeners[] = [
+			"appId" => $appId,
+			"event" => $event,
+			"listener" => $listener,
+			"priority" => $priority,
+		];
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param App[] $apps
 	 */
-	public function registerServiceAlias(string $alias, string $target): void {
-		// TODO: Implement registerServiceAlias() method.
+	public function delegateCapabilityRegistrations(array $apps): void {
+		foreach ($this->capabilities as $appId => $registration) {
+			try {
+				$apps[$appId]
+					->getContainer()
+					->registerCapability($registration['capability']);
+			} catch (Throwable $e) {
+				$appId = $registration['appId'];
+				$this->logger->logException($e, [
+					'message' => "Error during capability registration of $appId: " . $e->getMessage(),
+					'level' => ILogger::ERROR,
+				]);
+			}
+		}
+	}
+
+	public function delegateEventListenerRegistrations(IEventDispatcher $eventDispatcher): void {
+		foreach ($this->eventListeners as $registration) {
+			try {
+				if (isset($registration['priority'])) {
+					$eventDispatcher->addServiceListener(
+						$registration['event'],
+						$registration['listener'],
+						$registration['priority']
+					);
+				} else {
+					$eventDispatcher->addListener(
+						$registration['event'],
+						$registration['listener']
+					);
+				}
+			} catch (Throwable $e) {
+				$appId = $registration['appId'];
+				$this->logger->logException($e, [
+					'message' => "Error during event listener registration of $appId: " . $e->getMessage(),
+					'level' => ILogger::ERROR,
+				]);
+			}
+		}
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param App[] $apps
 	 */
-	public function registerParameter(string $name, $value): void {
-		// TODO: Implement registerParameter() method.
-	}
+	public function delegateContainerRegistrations(array $apps): void {
+		foreach ($this->services as $registration) {
+			try {
+				/**
+				 * Register the service and convert the callable into a \Closure if necessary
+				 */
+				$apps[$registration['appId']]
+					->getContainer()
+					->registerService(
+						$registration['name'],
+						Closure::fromCallable($registration['factory']),
+						$registration['shared'] ?? true
+					);
+			} catch (Throwable $e) {
+				$appId = $registration['appId'];
+				$this->logger->logException($e, [
+					'message' => "Error during service registration of $appId: " . $e->getMessage(),
+					'level' => ILogger::ERROR,
+				]);
+			}
+		}
 
-	/**
-	 * @inheritDoc
-	 */
-	public function registerEventListener(string $event, string $listener, int $priority = 0): void {
-		$this->eventListeners[] = [$event, $listener, $priority];
-	}
+		foreach ($this->aliases as $registration) {
+			try {
+				$apps[$registration['appId']]
+					->getContainer()
+					->registerAlias(
+						$registration['alias'],
+						$registration['target']
+					);
+			} catch (Throwable $e) {
+				$appId = $registration['appId'];
+				$this->logger->logException($e, [
+					'message' => "Error during service alias registration of $appId: " . $e->getMessage(),
+					'level' => ILogger::ERROR,
+				]);
+			}
+		}
 
-	public function getEventListeners(): array {
-		return $this->eventListeners;
+		foreach ($this->parameters as $registration) {
+			try {
+				$apps[$registration['appId']]
+					->getContainer()
+					->registerParameter(
+						$registration['name'],
+						$registration['value']
+					);
+			} catch (Throwable $e) {
+				$appId = $registration['appId'];
+				$this->logger->logException($e, [
+					'message' => "Error during service alias registration of $appId: " . $e->getMessage(),
+					'level' => ILogger::ERROR,
+				]);
+			}
+		}
 	}
 
 }

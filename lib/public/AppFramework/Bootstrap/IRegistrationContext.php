@@ -25,11 +25,19 @@ declare(strict_types=1);
 
 namespace OCP\AppFramework\Bootstrap;
 
-
+use OCP\AppFramework\IAppContainer;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IContainer;
 
 interface IRegistrationContext {
+
+	/**
+	 * @param string $capability
+	 * @see IAppContainer::registerCapability
+	 *
+	 * @since 20.0.0
+	 */
+	public function registerCapability(string $capability): void;
 
 	/**
 	 * Register a service
@@ -40,6 +48,8 @@ interface IRegistrationContext {
 	 *
 	 * @return void
 	 * @see IContainer::registerService()
+	 *
+	 * @since 20.0.0
 	 */
 	public function registerService(string $name, callable $factory, bool $shared = true): void;
 
@@ -49,6 +59,8 @@ interface IRegistrationContext {
 	 *
 	 * @return void
 	 * @see IContainer::registerAlias()
+	 *
+	 * @since 20.0.0
 	 */
 	public function registerServiceAlias(string $alias, string $target): void;
 
@@ -58,6 +70,8 @@ interface IRegistrationContext {
 	 *
 	 * @return void
 	 * @see IContainer::registerParameter()
+	 *
+	 * @since 20.0.0
 	 */
 	public function registerParameter(string $name, $value): void;
 

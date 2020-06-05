@@ -27,6 +27,7 @@ namespace OC\AppFramework\Bootstrap;
 
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\IAppContainer;
+use OCP\IServerContainer;
 
 class BootContext implements IBootContext {
 
@@ -39,6 +40,10 @@ class BootContext implements IBootContext {
 
 	public function getAppContainer(): IAppContainer {
 		return $this->appContainer;
+	}
+
+	public function getServerContainer(): IServerContainer {
+		return $this->appContainer->getServer();
 	}
 
 }

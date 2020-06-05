@@ -25,16 +25,17 @@ declare(strict_types=1);
 
 namespace OC\AppFramework\Bootstrap;
 
+use OC\ServerContainer;
 use OC_App;
 use OCP\App\AppPathNotFoundException;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\QueryException;
+use OCP\EventDispatcher\IEventDispatcher;
 use OCP\ILogger;
 use function class_exists;
 use function class_implements;
-use function contains;
 use function in_array;
 
 class Coordinator {
@@ -42,17 +43,28 @@ class Coordinator {
 	/** @var IAppManager */
 	private $appManager;
 
+	/** @var ServerContainer */
+	private $serverContainer;
+
+	/** @var IEventDispatcher */
+	private $eventDispatcher;
+
 	/** @var ILogger */
 	private $logger;
 
 	public function __construct(IAppManager $appManager,
+								ServerContainer $container,
+								IEventDispatcher $eventListener,
 								ILogger $logger) {
 		$this->appManager = $appManager;
+		$this->serverContainer = $container;
+		$this->eventDispatcher = $eventListener;
 		$this->logger = $logger;
 	}
 
 	public function runRegistration(): void {
-		$context = new RegistrationContext();
+		$context = new RegistrationContext($this->logger);
+		$apps = [];
 		foreach (OC_App::getEnabledApps() as $appId) {
 			/*
 			 * First, we have to enable the app's autoloader
@@ -74,13 +86,21 @@ class Coordinator {
 			if (class_exists($applicationClassName) && in_array(IBootstrap::class, class_implements($applicationClassName), true)) {
 				try {
 					/** @var IBootstrap|App $application */
-					$application = \OC::$server->query($applicationClassName);
-					$application->register($context);
+					$apps[$appId] = $application = $this->serverContainer->query($applicationClassName);
+					$application->register($context->for($appId));
 				} catch (QueryException $e) {
 					// Weird, but ok
 				}
 			}
 		}
+
+		/**
+		 * Now that all register methods have been called, we can delegate the registrations
+		 * to the actual services
+		 */
+		$context->delegateCapabilityRegistrations($apps);
+		$context->delegateEventListenerRegistrations($this->eventDispatcher);
+		$context->delegateContainerRegistrations($apps);
 	}
 
 	public function bootApp(string $appId): void {

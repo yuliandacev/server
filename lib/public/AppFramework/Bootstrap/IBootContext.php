@@ -26,9 +26,31 @@ declare(strict_types=1);
 namespace OCP\AppFramework\Bootstrap;
 
 use OCP\AppFramework\IAppContainer;
+use OCP\IServerContainer;
 
+/**
+ * @since 20.0.0
+ */
 interface IBootContext {
 
+	/**
+	 * Get hold of the app's container
+	 *
+	 * Useful to register and query app-specific services
+	 *
+	 * @return IAppContainer
+	 * @since 20.0.0
+	 */
 	public function getAppContainer(): IAppContainer;
+
+	/**
+	 * Get hold of the server DI container
+	 *
+	 * Useful to register and query system-wide services
+	 *
+	 * @return IServerContainer
+	 * @since 20.0.0
+	 */
+	public function getServerContainer(): IServerContainer;
 
 }
