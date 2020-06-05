@@ -113,6 +113,17 @@ class UserStatusMapperTest extends TestCase {
 		$this->mapper->insert($userStatus2);
 	}
 
+	public function testClearOlderThan(): void {
+		$this->insertSampleStatuses();
+
+		$this->mapper->clearOlderThan(55000);
+
+		$allStatuses = $this->mapper->findAll();
+		$this->assertCount(2, $allStatuses);
+		$this->assertEquals('admin', $allStatuses[0]->getUserId());
+		$this->assertEquals('user2', $allStatuses[1]->getUserId());
+	}
+
 	private function insertSampleStatuses(): void {
 		$userStatus1 = new UserStatus();
 		$userStatus1->setUserId('admin');

@@ -78,4 +78,17 @@ class UserStatusMapper extends QBMapper {
 
 		return $this->findEntity($qb);
 	}
+
+	/**
+	 * Clear all statuses older than a given timestamp
+	 *
+	 * @param int $timestamp
+	 */
+	public function clearOlderThan(int $timestamp): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->delete($this->tableName)
+			->where($qb->expr()->lte('clear_at', $qb->createNamedParameter($timestamp, IQueryBuilder::PARAM_INT)));
+
+		$qb->execute();
+	}
 }
